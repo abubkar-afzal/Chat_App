@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root{
+    ---b1: #1f50d858;
+    ---h1:#1c59dfee;
+    ---d1:#7d79f438;
+    ---wt: #ffffff;
+}
+.removeBg{
+    mix-blend-mode: color-burn;
+}
