@@ -19,7 +19,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
   const [SelectBio, setSelectBio] = useState(false);
   return (
     <>
-    <KeyboardAwareScrollView resetScrollToCoords={{ x: 0, y: 0 }} scrollEnabled={true}>
+    
       <View className="mt-[2.8rem] ">
         {/* TopBar */}
         <View className="flex h-[8vh] w-full flex-row justify-between overflow-hidden bg-[---b1]">
@@ -40,7 +40,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
         </View>
 
         {/* ProfileSession */}
-
+        <KeyboardAwareScrollView resetScrollToCoords={{ x: 0, y: 0 }} scrollEnabled={true}>
         <View className="items-center">
           
             <View className="my-[0.5rem] flex h-[90vh] w-[90vw] flex-col items-center rounded-[1rem] bg-[---d1]">
@@ -220,9 +220,9 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
               </Pressable>
             </View>
           
-        </View>
+        </View></KeyboardAwareScrollView>
       </View>
-      </KeyboardAwareScrollView>
+      
     </>
   );
 };
