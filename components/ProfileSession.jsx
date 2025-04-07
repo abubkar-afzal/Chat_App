@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
 import IconAnt from 'react-native-vector-icons/AntDesign';
 import IconFeature from 'react-native-vector-icons/Feather';
@@ -12,11 +12,13 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
   const [Phone, setPhone] = useState('+923270972423');
   const [DB, setDB] = useState('10/07/2005');
   const [Bio, setBio] = useState('💻❤️');
+  const [Password, setPassword] = useState('1122');
   const [SelectName, setSelectName] = useState(false);
   const [SelectEmail, setSelectEmail] = useState(false);
   const [SelectPhone, setSelectPhone] = useState(false);
   const [SelectDB, setSelectDB] = useState(false);
   const [SelectBio, setSelectBio] = useState(false);
+  const [SelectPassword, setSelectPassword] = useState(false);
   return (
     <>
     
@@ -42,8 +44,8 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
         {/* ProfileSession */}
         <KeyboardAwareScrollView resetScrollToCoords={{ x: 0, y: 0 }} scrollEnabled={true}>
         <View className="items-center">
-          
-            <View className="my-[0.5rem] flex h-[90vh] w-[90vw] flex-col items-center rounded-[1rem] bg-[---d1]">
+          <ScrollView className='h-[90vh]'>
+            <View className="my-[0.5rem] flex h-[100vh] w-[90vw] flex-col items-center rounded-[1rem] bg-[---d1]">
               <View className="my-[1rem] ml-3 h-[30vh] w-[60vw] rounded-full bg-[---h1]"></View>
               <View className="m-4 flex w-[70vw] flex-row justify-between overflow-hidden">
                 <TextInput
@@ -95,6 +97,40 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                     setSelectBio(!SelectBio);
                   }}>
                   {SelectBio ? (
+                    <IconMaterialCommunity
+                      name="check-bold"
+                      size={30}
+                      color="lightgreen"
+                      className=" mx-2 my-auto shadow-lg"
+                    />
+                  ) : (
+                    <IconMaterialCommunity
+                      name="pencil-outline"
+                      size={30}
+                      color="black"
+                      className=" mx-2 my-auto shadow-lg"
+                    />
+                  )}
+                </Pressable>
+              </View> 
+              <View className="m-4 flex w-[70vw] flex-row justify-between overflow-hidden">
+                <TextInput
+                  aria-disabled={SelectPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                  }}
+                  value={Password}
+                  placeholder="Enter Your Password"
+                  className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
+                  caretHidden={true}
+                  editable={SelectPassword}
+                  secureTextEntry={true}
+                />
+                <Pressable
+                  onPress={() => {
+                    setSelectPassword(!SelectPassword);
+                  }}>
+                  {SelectPassword ? (
                     <IconMaterialCommunity
                       name="check-bold"
                       size={30}
@@ -219,6 +255,8 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                 </Text>
               </Pressable>
             </View>
+            </ScrollView>
+            
           
         </View></KeyboardAwareScrollView>
       </View>

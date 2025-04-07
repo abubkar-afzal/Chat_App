@@ -18,6 +18,8 @@ import CallsSession from './CallsSession';
 import SettingSession from './SettingSession';
 import ChatSession from './ChartSession';
 import ContactSession from './ContactSession';
+import StatusViewSession from './StatusViewSession';
+
 const HomePage = () => {
   const [Search, setSearch] = useState('');
   const [Message, setMessage] = useState(true);
@@ -29,6 +31,9 @@ const HomePage = () => {
   const [MessagePosition, setMessagePosition] = useState(null);
   const [StatusPosition, setStatusPosition] = useState(null);
   const [CallPosition, setCallPosition] = useState(null);
+  const [StatusView, setStatusView] = useState(false);
+  const [ViewProfile, setViewProfile] = useState(false);
+
   const handleScroll = (event) => {
     const scrollY = event.nativeEvent.contentOffset.y;
     const screenHeight = Dimensions.get('window').height;
@@ -63,10 +68,28 @@ const HomePage = () => {
   };
   return (
     <>
-      {Chat ? (
-        <ChatSession setChat={setChat} setMessage={setMessage} setSetting={setSetting} />
+      {StatusView ? (
+        <StatusViewSession
+          setStatusView={setStatusView}
+          setStatus={setStatus}
+          setViewProfile={setViewProfile}
+          setChat={setChat}
+        />
+      ) : Chat ? (
+        <ChatSession
+          setChat={setChat}
+          setMessage={setMessage}
+          setSetting={setSetting}
+          setViewProfile={setViewProfile}
+          ViewProfile={ViewProfile}
+        />
       ) : Contact ? (
-        <ContactSession setContact={setContact} setMessage={setMessage} setSetting={setSetting} setChat={setChat}/>
+        <ContactSession
+          setContact={setContact}
+          setMessage={setMessage}
+          setSetting={setSetting}
+          setChat={setChat}
+        />
       ) : (
         <>
           {Setting ? (
@@ -83,7 +106,18 @@ const HomePage = () => {
                         pagingEnabled
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
-                        onScroll={handleScroll}>
+                        onScroll={handleScroll}
+                        
+                        contentOffset={
+                          Message
+                            ? { y: MessagePosition?.y-15 }
+                            : Status
+                              ? { y: StatusPosition?.y-15 }
+                              : Call
+                                ? { y: CallPosition?.y-15}
+                                : null
+                        }>
+                        
                         <View
                           className="my-[1rem]"
                           onLayout={(event) => {
@@ -140,7 +174,7 @@ const HomePage = () => {
               {Message ? (
                 <MessageSession setChat={setChat} setContact={setContact} setMessage={setMessage} />
               ) : Status ? (
-                <StatusSession />
+                <StatusSession setStatusView={setStatusView} />
               ) : Call ? (
                 <CallsSession />
               ) : null}
