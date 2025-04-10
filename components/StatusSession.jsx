@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/Entypo';
 import IconAnt from 'react-native-vector-icons/AntDesign';
 import IconFeature from 'react-native-vector-icons/Feather';
@@ -12,7 +12,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-const StatusSession = ({setStatusView}) => {
+
+const StatusSession = ({setStatusView, setWriteStatus, setCameraOpen,setStatusMenu}) => {
+  
   return (
     <>
     
@@ -26,7 +28,7 @@ const StatusSession = ({setStatusView}) => {
           </View>
           </Pressable>
          
-          <Pressable className="">
+          <Pressable onPress={() => setStatusMenu(true)} >
             <IconMaterialCommunity
               name="menu"
               size={30}
@@ -59,23 +61,23 @@ const StatusSession = ({setStatusView}) => {
         </SafeAreaView>
       </View>
       {/* CameraButton */}
-      <View className="absolute bottom-[9rem] right-[1rem] shadow-[1rem] shadow-black">
+      <Pressable onPress={()=>{setCameraOpen(true)}} className="absolute bottom-[9rem] right-[1rem] shadow-[1rem] shadow-black">
         <IconAnt
           name="camera"
           size={35}
           color="#1c59dfee"
           className="m-4 rounded-full bg-[---wt] p-3 shadow-lg"
         />
-      </View>
+      </Pressable>
       {/* PenButton */}
-      <View className="absolute bottom-[4rem] right-[1rem] shadow-[1rem] shadow-black">
+      <Pressable onPress={()=>{setWriteStatus(true)}} className="absolute bottom-[4rem] right-[1rem] shadow-[1rem] shadow-black">
         <IconMaterialCommunity
           name="pen"
           size={35}
           color="#1c59dfee"
           className="m-4 rounded-full bg-[---wt] p-3 shadow-lg"
         />
-      </View></>
+      </Pressable></>
       
     
       

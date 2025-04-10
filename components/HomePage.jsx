@@ -19,12 +19,17 @@ import SettingSession from './SettingSession';
 import ChatSession from './ChartSession';
 import ContactSession from './ContactSession';
 import StatusViewSession from './StatusViewSession';
+import NewCallSession from './NewCallSession';
+import WriteStatusSession from './WriteStatus';
+import CustomCamera from './CameraScreen';
+import StatusMenuSession from './StatusMenuSession';
 
 const HomePage = () => {
   const [Search, setSearch] = useState('');
   const [Message, setMessage] = useState(true);
   const [Status, setStatus] = useState(false);
-  const [Call, setCall] = useState(false);
+  const [WriteStatus, setWriteStatus] = useState(false);
+  const [Call, setCall] = useState(false);const [NewCall, setNewCall] = useState(false);
   const [Setting, setSetting] = useState(false);
   const [Chat, setChat] = useState(false);
   const [Contact, setContact] = useState(false);
@@ -33,6 +38,8 @@ const HomePage = () => {
   const [CallPosition, setCallPosition] = useState(null);
   const [StatusView, setStatusView] = useState(false);
   const [ViewProfile, setViewProfile] = useState(false);
+  const [CameraOpen, setCameraOpen] = useState(false);
+  const [StatusMenu, setStatusMenu] = useState(false);
 
   const handleScroll = (event) => {
     const scrollY = event.nativeEvent.contentOffset.y;
@@ -68,7 +75,7 @@ const HomePage = () => {
   };
   return (
     <>
-      {StatusView ? (
+      {StatusMenu ? <StatusMenuSession setStatusMenu={setStatusMenu} setStatusView={setStatusView}/> : CameraOpen ? <CustomCamera setCameraOpen={setCameraOpen}/>: WriteStatus ? <WriteStatusSession setWriteStatus={setWriteStatus}/>: NewCall ? <NewCallSession setNewCall={setNewCall}/>:StatusView ? (
         <StatusViewSession
           setStatusView={setStatusView}
           setStatus={setStatus}
@@ -107,17 +114,15 @@ const HomePage = () => {
                         showsVerticalScrollIndicator={false}
                         showsHorizontalScrollIndicator={false}
                         onScroll={handleScroll}
-                        
                         contentOffset={
                           Message
-                            ? { y: MessagePosition?.y-15 }
+                            ? { y: MessagePosition?.y - 15 }
                             : Status
-                              ? { y: StatusPosition?.y-15 }
+                              ? { y: StatusPosition?.y - 15 }
                               : Call
-                                ? { y: CallPosition?.y-15}
+                                ? { y: CallPosition?.y - 15 }
                                 : null
                         }>
-                        
                         <View
                           className="my-[1rem]"
                           onLayout={(event) => {
@@ -174,9 +179,9 @@ const HomePage = () => {
               {Message ? (
                 <MessageSession setChat={setChat} setContact={setContact} setMessage={setMessage} />
               ) : Status ? (
-                <StatusSession setStatusView={setStatusView} />
+                <StatusSession setStatusView={setStatusView} setWriteStatus={setWriteStatus} setCameraOpen={setCameraOpen} setStatusMenu={setStatusMenu}/>
               ) : Call ? (
-                <CallsSession />
+                <CallsSession setChat={setChat} setNewCall={setNewCall}/>
               ) : null}
             </View>
           )}
