@@ -6,10 +6,18 @@ import IconFeature from 'react-native-vector-icons/Feather';
 import IconMaterialCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import PrivacySession from './PrivacySession';
-const AccountSession = ({ setSettingPage, setAccountPage }) => {
+import { useDispatch } from 'react-redux';
+import { removeToken } from './redux/action';
+const AccountSession = ({ setSettingPage, setAccountPage,setHome}) => {
   const [Backup, setBackup] = useState(false);
   const [PrivacyPage, setPrivacyPage] = useState(false);
   const [AccountPageForPrivacy, setAccountPageForPrivacy] = useState(true);
+ 
+ const dispatch = useDispatch();
+  const logout = () => {
+    dispatch(removeToken())
+    setHome(false);}
+
   return (
     <>
     {
@@ -78,7 +86,7 @@ const AccountSession = ({ setSettingPage, setAccountPage }) => {
           </Pressable>
         </View>
         <View className='items-center'>
-          <Pressable className='w-[30vw] '>
+          <Pressable onPress={logout} className='w-[30vw]'  >
             <Text className=" my-[1rem] rounded-[1rem] bg-[---lo] font-black p-4 px-[2rem] text-white ">
               Logout
             </Text>

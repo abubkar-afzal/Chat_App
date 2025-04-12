@@ -8,7 +8,7 @@ import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AboutSession from './AboutSession';
 import AccountSession from './AccountSession';
 import ProfileSession from './ProfileSession';
-const SettingSession = ({ setSetting }) => {
+const SettingSession = ({ setSetting,setHome }) => {
   const [SettingPage, setSettingPage] = useState(true);
   const [ProfilePage, setProfilePage] = useState(false);
   const [AboutPage, setAboutPage] = useState(false);
@@ -127,7 +127,7 @@ const SettingSession = ({ setSetting }) => {
       ) : AboutPage ? (
         <AboutSession setAboutPage={setAboutPage} setSettingPage={setSettingPage}/>
       ) : AccountPage ? (
-        <AccountSession setAccountPage={setAccountPage} setSettingPage={setSettingPage}/>
+        <AccountSession setAccountPage={setAccountPage} setSettingPage={setSettingPage} setHome={setHome}/>
       ) : ProfilePage ? (
         <ProfileSession setProfilePage={setProfilePage} setSettingPage={setSettingPage}/>
       ) : null}

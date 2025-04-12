@@ -12,6 +12,9 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomePage from './HomePage';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { addToken } from './redux/action';
+
 const LoginAndSignUp = () => {
   const [Name, setName] = useState('');
   const [ChangeName, setChangeName] = useState(false);
@@ -55,6 +58,8 @@ const LoginAndSignUp = () => {
     }
   }, [Email, Password, Name, Phone, BD]);
 
+  const dispatch = useDispatch();
+
   const addUser = async () => {
     try {
       const response = await axios.post('http://192.168.0.107:3000/users', {
@@ -68,24 +73,81 @@ const LoginAndSignUp = () => {
           'Content-Type': 'application/json' 
         }
       });
-      Alert.alert('Success', 'User added successfully');
+      const { data } = response;
+      if (data.success) {
+      const user ={
+        user_name: Name,
+        user_email: Email,
+        user_date_of_birth: BD,
+        user_phone: Phone,
+        user_password: Password,
+      };
+      dispatch(addToken(user));
+      Alert.alert('Welcome', `${Name}`);
       setName('');
       setEmail('');
       setBD('');
       setPhone('');
       setPassword('');
-      setHome(true);
+      setHome(true);}
+      else{
+        Alert.alert('Error', 'User already exists');
+        setSignUp(false), setLogin(true), setForgot(false);
+      }
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to add user');
       setHome(false);
     }
   };
-
+  const getUser = async () => {
+    if (!Email) {
+      Alert.alert('Error', 'Email is required');
+      return;
+    }
+  
+    const url = `http://192.168.0.107:3000/users/email/${encodeURIComponent(Email)}`;
+    console.log("🚀 Requesting user with URL:", url);
+  
+    try {
+      const response = await axios.get(url);
+      const { data } = response;
+  
+      if (data.success) {
+        const user = {
+          user_name: data.token.user_name,
+          user_email: data.token.user_email,
+          user_date_of_birth: data.token.user_date_of_birth,
+          user_phone: data.token.user_phone,
+          user_password: data.token.user_password,
+        };
+  
+        dispatch(addToken(user));
+        Alert.alert('Welcome', `${data.token.user_name}`);
+  
+        setName('');
+        setEmail('');
+        setBD('');
+        setPhone('');
+        setPassword('');
+        setHome(true);
+      } else {
+        Alert.alert('Error', 'User does not exist');
+        setSignUp(true);
+        setLogin(false);
+        setForgot(false);
+      }
+    } catch (error) {
+      console.error("❌ Axios error:", error);
+      Alert.alert('Error', 'Failed to get user');
+      setHome(false);
+    }
+  };
+  
   return (
     <>
       {Home ? (
-        <HomePage />
+        <HomePage setHome={setHome}/>
       ) : (
         <View className="my-auto items-center ">
           {/* Login */}
@@ -146,9 +208,7 @@ const LoginAndSignUp = () => {
                     setLoginButtonActive(false);
                   }}>
                   <Text
-                    onPress={() => {
-                      setHome(true);
-                    }}
+                    onPress={getUser}
                     disabled={LoginButtonDisable}
                     className={` my-[1rem] rounded-[1rem] p-4 px-[2rem] text-white ${LoginButtonActive ? 'bg-[---b1]' : 'bg-[---h1]'} disabled:bg-[---d1]`}>
                     Login

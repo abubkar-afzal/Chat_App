@@ -182,7 +182,7 @@ const ChatSession = ({ setChat, setSetting, setMessage, setViewProfile, ViewProf
                 <Pressable className="">
                   <IconEntypo
                     name="paper-plane"
-                    size={40}
+                    size={25}
                     color="white"
                     className="h-[3rem] w-[3rem] rounded-full bg-[---sent] p-2 shadow-lg"
                   />

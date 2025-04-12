@@ -6,13 +6,18 @@ import IconFeature from 'react-native-vector-icons/Feather';
 import IconMaterialCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useSelector } from 'react-redux';
 const ProfileSession = ({ setProfilePage, setSettingPage }) => {
-  const [Name, setName] = useState('Hafiz Abubakar');
-  const [Email, setEmail] = useState('hafizabubakar@gmial.com');
-  const [Phone, setPhone] = useState('+923270972423');
-  const [DB, setDB] = useState('10/07/2005');
-  const [Bio, setBio] = useState('💻❤️');
-  const [Password, setPassword] = useState('1122');
+
+  const data = useSelector((state) => state.reducer);
+  const [user] = data
+  console.log(user.user_name);
+  const [Name, setName] = useState(user.user_name);
+  const [Email, setEmail] = useState(user.user_email);
+  const [Phone, setPhone] = useState(user.user_phone);
+  const [DB, setDB] = useState(user.user_date_of_birth);
+  const [Bio, setBio] = useState(user.user_bio);
+  const [Password, setPassword] = useState(user.user_password);
   const [SelectName, setSelectName] = useState(false);
   const [SelectEmail, setSelectEmail] = useState(false);
   const [SelectPhone, setSelectPhone] = useState(false);
@@ -56,7 +61,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={Name}
                   placeholder="Enter Your Name"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectName}
                 />
                 <Pressable
@@ -89,7 +94,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={Bio}
                   placeholder="Enter Your Bio"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectBio}
                 />
                 <Pressable
@@ -122,7 +127,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={Password}
                   placeholder="Enter Your Password"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectPassword}
                   secureTextEntry={true}
                 />
@@ -156,7 +161,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={Email}
                   placeholder="Enter Your Email"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectEmail}
                   keyboardType="email-address"
                 />
@@ -190,7 +195,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={DB}
                   placeholder="Enter Your Date Of Birth"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectDB}
                   keyboardType="name-phone-pad"
                 />
@@ -224,7 +229,7 @@ const ProfileSession = ({ setProfilePage, setSettingPage }) => {
                   value={Phone}
                   placeholder="Enter Your Phone"
                   className=" h-[3rem] w-[60vw] rounded-[1rem] px-[1rem] aria-disabled:border"
-                  caretHidden={true}
+                  
                   editable={SelectPhone}
                   keyboardType="phone-pad"
                 />

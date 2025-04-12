@@ -33,13 +33,32 @@ pool.getConnection((err, connection) => {
   connection.release();
 });
 
-// GET all users
-app.get('/users', (req, res) => {
-  pool.query('SELECT * FROM users', (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
+// GET a user by email
+app.get('/users/email/:email', (req, res) => {
+  const email = req.params.email;
+  console.log('📥 Received request for email:', email);
+
+  const query = 'SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)';
+  pool.query(query, [email], (err, results) => {
+    if (err) {
+      console.error('❌ DB error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    console.log('📦 DB results:', results);
+
+    if (results.length === 0) {
+      console.warn('❌ No user found with email:', email);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log('✅ Found user:', results[0]);
+    res.json({ token: results[0], success: true });
   });
 });
+
+
+
 
 // POST to create a new user
 app.post('/users', (req, res) => {
@@ -54,7 +73,7 @@ app.post('/users', (req, res) => {
 
   pool.query(query, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'User added successfully', id: result.insertId });
+    res.json({ message: 'User added successfully', id: result.insertId, success: true });
   });
 });
 

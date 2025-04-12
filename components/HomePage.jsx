@@ -24,7 +24,7 @@ import WriteStatusSession from './WriteStatus';
 import CustomCamera from './CameraScreen';
 import StatusMenuSession from './StatusMenuSession';
 
-const HomePage = () => {
+const HomePage = ({setHome}) => {
   const [Search, setSearch] = useState('');
   const [Message, setMessage] = useState(true);
   const [Status, setStatus] = useState(false);
@@ -100,7 +100,7 @@ const HomePage = () => {
       ) : (
         <>
           {Setting ? (
-            <SettingSession setSetting={setSetting} />
+            <SettingSession setSetting={setSetting} setHome={setHome}/>
           ) : (
             <View className="mt-[2.8rem] ">
               {/* topBar */}
