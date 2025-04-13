@@ -77,6 +77,32 @@ app.post('/users', (req, res) => {
   });
 });
 
+// POST to update user
+app.post('/users/update_user', (req, res) => {
+  const { user_name, user_email, user_date_of_birth, user_phone, user_password, user_bio, user_picture } = req.body;
+
+  const query = `
+    UPDATE users 
+    SET 
+      user_name = ?, 
+      user_date_of_birth = ?, 
+      user_phone = ?, 
+      user_password = ?, 
+      user_bio = ?, 
+      user_picture = ?
+    WHERE user_email = ?
+  `;
+
+  // user_email is used in WHERE, not SET (assuming it's the identifier)
+  const values = [user_name, user_date_of_birth, user_phone, user_password, user_bio, user_picture, user_email];
+
+  pool.query(query, values, (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: 'User updated successfully', affectedRows: result.affectedRows, success: true });
+  });
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

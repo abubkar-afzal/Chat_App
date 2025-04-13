@@ -15,7 +15,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { addToken } from './redux/action';
 
-const LoginAndSignUp = () => {
+const LoginAndSignUp = ({Home,setHome}) => {
   const [Name, setName] = useState('');
   const [ChangeName, setChangeName] = useState(false);
   const [BD, setBD] = useState('');
@@ -30,7 +30,9 @@ const LoginAndSignUp = () => {
   const [Login, setLogin] = useState(true);
   const [SignUp, setSignUp] = useState(false);
   const [Forgot, setForgot] = useState(false);
-  const [Home, setHome] = useState(false);
+  const [Bio, setBio] = useState("");
+  const [Picture, setPicture] = useState("");
+  
 
   const [LoginButtonActive, setLoginButtonActive] = useState(false);
   const [LoginButtonDisable, setLoginButtonDisable] = useState(true);
@@ -81,6 +83,8 @@ const LoginAndSignUp = () => {
         user_date_of_birth: BD,
         user_phone: Phone,
         user_password: Password,
+        user_bio: Bio,
+        user_picture: Picture,
       };
       dispatch(addToken(user));
       Alert.alert('Welcome', `${Name}`);
@@ -120,6 +124,8 @@ const LoginAndSignUp = () => {
           user_date_of_birth: data.token.user_date_of_birth,
           user_phone: data.token.user_phone,
           user_password: data.token.user_password,
+          user_bio: data.token.user_bio || "",
+          user_picture: data.token.user_picture || "",
         };
   
         dispatch(addToken(user));
@@ -138,8 +144,8 @@ const LoginAndSignUp = () => {
         setForgot(false);
       }
     } catch (error) {
-      console.error("❌ Axios error:", error);
-      Alert.alert('Error', 'Failed to get user');
+    
+      Alert.alert('Error', 'User does not exist');
       setHome(false);
     }
   };

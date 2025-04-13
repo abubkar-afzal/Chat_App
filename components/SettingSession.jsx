@@ -8,12 +8,15 @@ import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AboutSession from './AboutSession';
 import AccountSession from './AccountSession';
 import ProfileSession from './ProfileSession';
+import { useSelector } from 'react-redux';
 const SettingSession = ({ setSetting,setHome }) => {
   const [SettingPage, setSettingPage] = useState(true);
   const [ProfilePage, setProfilePage] = useState(false);
   const [AboutPage, setAboutPage] = useState(false);
   const [AccountPage, setAccountPage] = useState(false);
-
+  const data = useSelector((state) => state.reducer);
+  const [user] = data;
+  console.log(user)
   return (
     <>
       {SettingPage ? (
@@ -55,9 +58,9 @@ const SettingSession = ({ setSetting,setHome }) => {
               className="my-[0.5rem] flex h-[10vh] w-[95vw] flex-row items-center rounded-[1rem] bg-[---d1]">
               <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]"></View>
               <View className="mx-2 w-[60vw] overflow-hidden">
-                <Text className="mt-[10px] h-[25px] text-[18px] font-bold">Hafiz Abubakar</Text>
+                <Text className="mt-[10px] h-[25px] text-[18px] font-bold">{user.user_name}</Text>
                 <Text className="my-[10px] h-[20px] text-[14px]">
-                  Hy! There I am using peigon message.
+                  {user.user_bio}
                 </Text>
               </View>
               <View className="">
