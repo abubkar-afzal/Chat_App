@@ -45,15 +45,66 @@ app.get('/users/email/:email', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 
-    console.log('📦 DB results:', results);
+   
 
     if (results.length === 0) {
       console.warn('❌ No user found with email:', email);
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log('✅ Found user:', results[0]);
+    
     res.json({ token: results[0], success: true });
+  });
+});
+
+// GET a user by email for message
+app.get('/users/messages/:email', (req, res) => {
+  const email = req.params.email;
+ 
+
+  const query = `
+    SELECT * FROM chat 
+    WHERE LOWER(user_email) = LOWER(?) 
+       OR LOWER(reciver_email) = LOWER(?)`;
+
+  pool.query(query, [email, email], (err, results) => {
+    if (err) {
+      console.error('❌ DB error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+   
+
+    if (results.length === 0) {
+      console.warn('❌ No messages found for email:', email);
+      return res.status(404).json({ message: 'No messages found' });
+    }
+
+    console.log('✅ Messages found:', results.length);
+    res.json({ messages: results, success: true });
+  });
+});
+
+
+
+// GET all user
+app.get('/users/allusers', (req, res) => {
+  const query = 'SELECT * FROM users ';
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error('❌ DB error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+
+    
+
+    if (results.length === 0) {
+      console.warn('❌ No user found');
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    
+    res.json({ allusers: results, success: true });
   });
 });
 
