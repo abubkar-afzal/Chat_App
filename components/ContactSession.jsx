@@ -8,14 +8,16 @@ import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import IconAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-const ContactSession = ({ setContact, setMessage, setSetting, setChat }) => {
+const ContactSession = ({ setContact, setMessage, setSetting, setChat,setOtherUserDetails }) => {
   const data = useSelector((state) => state.reducer);
   const [user] = data;
   const [Users, setUsers] = useState([]);
+  console.log(user)
+  console.log(Users)
   useEffect(() => {
-    getUsers();
+    getAllUsers();
   }, []);
-  const getUsers = async () => {
+  const getAllUsers = async () => {
     const url = `http://192.168.0.107:3000/users/allusers`;
 
     try {
@@ -103,6 +105,12 @@ const ContactSession = ({ setContact, setMessage, setSetting, setChat }) => {
                       setMessage(false);
                       setChat(true);
                       setSetting(false);
+                      
+                      setOtherUserDetails({
+                        reciver_name:  items.user_name,
+                        reciver_email:  items.user_email,
+                        reciver_phone:  items.user_phone,
+                      });
                     }}
                     className="my-[0.5rem] flex h-[10vh] w-[95vw] flex-row items-center rounded-[1rem] bg-[---d1] disabled:opacity-60">
                     <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]"></View>

@@ -18,7 +18,7 @@ import { StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-const MessageSession = ({ setMessage, setChat, setContact }) => {
+const MessageSession = ({ setMessage, setChat, setContact, setOtherUserDetails }) => {
   const data = useSelector((state) => state.reducer);
   const [user] = data;
   const [Email, setEmail] = useState(user.user_email);
@@ -35,48 +35,42 @@ const MessageSession = ({ setMessage, setChat, setContact }) => {
     }
 
     const url = `http://192.168.0.107:3000/users/messages/${encodeURIComponent(Email)}`;
-    console.log('🚀 Requesting user with URL:', url);
 
     try {
       const response = await axios.get(url);
       const { data } = response;
-    
+
       if (data.success) {
         // Format messages before setting them
         const formattedMessages = formatMessages(data.messages);
         setMessages(formattedMessages);
       } else {
-        console.log('❌ Error:');
         Alert.alert('Error', 'User does not exist');
       }
     } catch (error) {
-      console.log('❌ Error:', error);
     }
   };
 
   const formatMessages = (messages) => {
     // Sort messages by time (latest first)
-    const sortedMessages = messages.sort((a, b) => new Date(b.message_time) - new Date(a.message_time));
+    const sortedMessages = messages.sort(
+      (a, b) => new Date(b.message_time) - new Date(a.message_time)
+    );
 
-    // Group messages by sender/receiver
-    const groupedMessages = [];
-    const grouped = {};
+    const seenEmails = new Set();
+    const uniqueMessages = [];
 
-    sortedMessages.forEach((message) => {
-      const key = `${message.user_name}-${message.reciver_name}`;
-      if (!grouped[key]) {
-        grouped[key] = [];
+    sortedMessages.forEach((msg) => {
+      // Determine the other user's email
+      const otherEmail = msg.user_email === user.user_email ? msg.reciver_email : msg.user_email;
+
+      if (!seenEmails.has(otherEmail)) {
+        seenEmails.add(otherEmail);
+        uniqueMessages.push(msg);
       }
-      grouped[key].push(message);
     });
 
-    // Get the latest message for each sender/receiver pair
-    for (const key in grouped) {
-      const latestMessage = grouped[key][0]; // since the messages are sorted by time, the first one is the latest
-      groupedMessages.push(latestMessage);
-    }
-
-    return groupedMessages;
+    return uniqueMessages;
   };
 
   const formatTime = (timestamp) => {
@@ -101,51 +95,57 @@ const MessageSession = ({ setMessage, setChat, setContact }) => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
           <View className="items-center">
-            {Messages.length > 0 ? Messages.map((item) => {
-              return (
-                <Pressable
-                  key={item.message_id}
-                  onPress={() => {
-                    setContact(false);
-                    setMessage(false);
-                    setChat(true);
-                  }}
-                  onLongPress={() => {
-                    setDeleteMessage(true);
-                  }}
-                  className="my-[0.5rem] flex h-[10vh] w-[95vw] flex-row items-center rounded-[1rem] bg-[---d1]"
-                >
-                  <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]"></View>
-                  <View className="mx-2 w-[60vw] overflow-hidden">
-                    <Text className="mt-[10px] h-[25px] text-[18px] font-bold">
-                      {item.user_name === user.user_name ? item.reciver_name : item.user_name}
-                    </Text>
-                    <Text className="my-[10px] h-[20px] text-[14px]">{item.message}</Text>
-                  </View>
-                  <View className="flex h-[10vh] flex-col">
-                    {DeleteMessage ? (
-                      <TouchableOpacity
-                        style={[styles.checkbox, isChecked && styles.checkboxChecked]}
-                        className="absolute top-4 mx-2 shadow-lg"
-                        onPress={toggleCheckbox}>
-                        {isChecked && <Text className="">✔</Text>}
-                      </TouchableOpacity>
-                    ) : (
-                      <IconMaterialCommunity
-                        name="pin"
-                        size={20}
-                        color="black"
-                        className="absolute left-[1rem] top-2 mx-2 shadow-lg"
-                      />
-                    )}
-                    <Text className="absolute bottom-2  text-[10px]">
-                      {formatTime(item.message_time)}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            }) : (
-              <View className="items-center h-[90vh]">
+            {Messages.length > 0 ? (
+              Messages.map((item) => {
+                return (
+                  <Pressable
+                    key={item.message_id}
+                    onPress={() => {
+                      setContact(false);
+                      setMessage(false);
+                      setChat(true);
+                      setOtherUserDetails({
+                        reciver_name: (item.reciver_name == user.user_name ? item.user_name:item.reciver_name),
+                        reciver_email: (item.reciver_email == user.user_email ? item.user_email:item.reciver_email),
+                        reciver_phone: (item.reciver_phone == user.user_phone ? item.user_phone:item.reciver_phone),
+                      });
+                    }}
+                    onLongPress={() => {
+                      setDeleteMessage(true);
+                    }}
+                    className="my-[0.5rem] flex h-[10vh] w-[95vw] flex-row items-center rounded-[1rem] bg-[---d1]">
+                    <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]"></View>
+                    <View className="mx-2 w-[60vw] overflow-hidden">
+                      <Text className="mt-[10px] h-[25px] text-[18px] font-bold">
+                        {item.user_name === user.user_name ? item.reciver_name : item.user_name}
+                      </Text>
+                      <Text className="my-[10px] h-[20px] text-[14px]">{item.message}</Text>
+                    </View>
+                    <View className="flex h-[10vh] flex-col">
+                      {DeleteMessage ? (
+                        <TouchableOpacity
+                          style={[styles.checkbox, isChecked && styles.checkboxChecked]}
+                          className="absolute top-4 mx-2 shadow-lg"
+                          onPress={toggleCheckbox}>
+                          {isChecked && <Text className="">✔</Text>}
+                        </TouchableOpacity>
+                      ) : (
+                        <IconMaterialCommunity
+                          name="pin"
+                          size={20}
+                          color="black"
+                          className="absolute left-[1rem] top-2 mx-2 shadow-lg"
+                        />
+                      )}
+                      <Text className="absolute bottom-2  text-[10px]">
+                        {formatTime(item.message_time)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })
+            ) : (
+              <View className="h-[90vh] items-center">
                 <Text className="my-auto">There is no message, please talk to anyone..!!</Text>
               </View>
             )}

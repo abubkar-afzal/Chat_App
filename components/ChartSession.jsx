@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   Platform,
   Pressable,
   SafeAreaView,
@@ -17,18 +18,98 @@ import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ViewProfileSession from './ViewProfileSession';
-
-const ChatSession = ({ setChat, setSetting, setMessage, setViewProfile, ViewProfile }) => {
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { io } from 'socket.io-client';
+const ChatSession = ({
+  setChat,
+  setSetting,
+  setMessage,
+  setViewProfile,
+  ViewProfile,
+  OtherUserDetails,
+  setCameraOpen
+}) => {
   const [DropMenu, setDropMenu] = useState(false);
   const [SentAbleMessage, setSentAbleMessage] = useState('');
   const [isPickerVisible, setPickerVisible] = useState(false);
 
   const [keyboardArea, setKeyboardArea] = useState(false);
   const [widgetLayout, setWidgetLayout] = useState(false);
+  const data = useSelector((state) => state.reducer);
+  const [user] = data;
+  
+  const [Messages, setMessages] = useState([]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getChat(); 
+    }, 1000); 
+  
+    return () => clearInterval(interval); 
+ 
+  }, []);
+
+  const getChat = async () => {
+   
+
+    const url = `http://192.168.0.107:3000/users/messages/person/${encodeURIComponent(user.user_email)}/${encodeURIComponent(OtherUserDetails.reciver_email)}`;
+
+    try {
+      const response = await axios.get(url);
+      const { data } = response;
+    
+      if (data.success) {
+        setMessages(data.messages);
+      } else {
+        Alert.alert('Error', 'User does not exist');
+      }
+    } catch (error) {
+    }
+  };
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+    return formattedTime;
+  };
+
+  const sendMessage = async () => {
+    try {
+      const response = await axios.post(
+        'http://192.168.0.107:3000/users/send_message',
+        {
+          user_name: user.user_name,
+          user_email: user.user_email,
+          user_phone: user.user_phone,
+          message: SentAbleMessage,
+          message_time: new Date().toISOString().slice(0, 19).replace('T', ' '),
+          reciver_name: OtherUserDetails.reciver_name,
+          reciver_email: OtherUserDetails.reciver_email,
+          reciver_phone: OtherUserDetails.reciver_phone,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const { data } = response;
+      if (data.success) {
+      } else {
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send message');
+    }
+  };
   return (
     <>
       {ViewProfile ? (
-        <ViewProfileSession setViewProfile={setViewProfile} setChat={setChat} />
+        <ViewProfileSession
+          setViewProfile={setViewProfile}
+          setChat={setChat}
+          OtherUserDetails={OtherUserDetails}
+        />
       ) : (
         <View className="mt-[2.8rem] ">
           {/* TopBar */}
@@ -55,12 +136,17 @@ const ChatSession = ({ setChat, setSetting, setMessage, setViewProfile, ViewProf
                 className="flex flex-row items-center">
                 <View className="mx-3 my-auto h-[7vh] w-[14vw] rounded-full bg-[---h1]"></View>
                 <Text className="h-[5vh] w-[48vw] overflow-hidden py-2 text-[1.5rem] font-black text-white">
-                  Haifz Aubakar Afzal
+                  {OtherUserDetails.reciver_name}
                 </Text>
               </Pressable>
 
               <Pressable>
-                <IconMaterialIcon name="add-call" size={30} color="white" className="m-2 shadow-lg" />
+                <IconMaterialIcon
+                  name="add-call"
+                  size={30}
+                  color="white"
+                  className="m-2 shadow-lg"
+                />
               </Pressable>
               <Pressable
                 onPress={() => {
@@ -121,25 +207,39 @@ const ChatSession = ({ setChat, setSetting, setMessage, setViewProfile, ViewProf
           <SafeAreaView className={`${keyboardArea ? 'h-[50vh]' : 'h-[85vh]'}`}>
             <ScrollView className="flex flex-col">
               {/* ourMessage */}
-              <View className="items-end">
-                <View className="mx-3 my-2 flex w-[70vw]  flex-col rounded-[2rem] bg-[---msg] p-3 pb-6 ">
-                  <Text className="text-[16px] text-white">
-                    Hello There Its Abubakar. This is a text message from abubakar afzal. I hope you
-                    are doing well.
-                  </Text>
-                  <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
-                    10:00 AM
-                  </Text>
+              {
+                Messages.map((item)=>{
+                  
+                  return(
+                    user.user_name == item.user_name ? <View key={item.message_id} className="items-end pl-[30vw]">
+                    <View className=" flex flex-row items-center ">
+                      <View className=" my-2 flex  min-w-[25vw]   flex-col rounded-[2rem] bg-[---msg] p-3 pb-6 ">
+                        <Text className="text-[16px] text-white">
+                         {item.message}
+                        </Text>
+                        <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
+                        {formatTime(item.message_time)}
+                        </Text>
+                      </View>
+                      <View className="mx-[5px] h-[2rem] w-[2rem] rounded-[2rem] bg-[---b1]"></View>
+                    </View>
+                  </View>: <View key={item.message_id} className="items-start pr-[30vw]">
+                <View className="flex flex-row items-center">
+                  <View className="mx-[5px] h-[2rem] w-[2rem] rounded-[2rem] bg-[---b1]"></View>
+                  <View className=" my-2 flex  min-w-[25vw]   flex-col rounded-[2rem] bg-[---msg2] p-3 pb-6 ">
+                    <Text className="text-[16px] text-white"> {item.message}</Text>
+                    <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
+                    {formatTime(item.message_time)}
+                    </Text>
+                  </View>
                 </View>
               </View>
-              <View className="items-start">
-                <View className="mx-3 my-2 flex w-[70vw]  flex-col rounded-[2rem] bg-[---msg2] p-3 pb-6 ">
-                  <Text className="text-[16px] text-white">I know it's you. How are you?</Text>
-                  <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
-                    10:00 AM
-                  </Text>
-                </View>
-              </View>
+                  )
+                })
+              }
+              
+
+              
             </ScrollView>
           </SafeAreaView>
 
@@ -174,12 +274,19 @@ const ChatSession = ({ setChat, setSetting, setMessage, setViewProfile, ViewProf
                   }}>
                   <IconAnt name="paperclip" size={25} color="black" className="mx-2 shadow-lg" />
                 </Pressable>
-                <Pressable>
+                <Pressable onPress={()=>{
+                  setCameraOpen(true)
+                }}>
                   <IconAnt name="camera" size={25} color="black" className=" shadow-lg" />
                 </Pressable>
               </Pressable>
               {SentAbleMessage.length > 0 ? (
-                <Pressable className="">
+                <Pressable
+                  className=""
+                  onPress={() => {
+                    sendMessage();
+                    setSentAbleMessage('');
+                  }}>
                   <IconEntypo
                     name="paper-plane"
                     size={25}

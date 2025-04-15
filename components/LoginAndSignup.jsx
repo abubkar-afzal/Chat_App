@@ -15,7 +15,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { addToken } from './redux/action';
 
-const LoginAndSignUp = ({Home,setHome}) => {
+const LoginAndSignUp = ({ Home, setHome }) => {
   const [Name, setName] = useState('');
   const [ChangeName, setChangeName] = useState(false);
   const [BD, setBD] = useState('');
@@ -30,9 +30,8 @@ const LoginAndSignUp = ({Home,setHome}) => {
   const [Login, setLogin] = useState(true);
   const [SignUp, setSignUp] = useState(false);
   const [Forgot, setForgot] = useState(false);
-  const [Bio, setBio] = useState("");
-  const [Picture, setPicture] = useState("");
-  
+  const [Bio, setBio] = useState('');
+  const [Picture, setPicture] = useState('');
 
   const [LoginButtonActive, setLoginButtonActive] = useState(false);
   const [LoginButtonDisable, setLoginButtonDisable] = useState(true);
@@ -64,42 +63,45 @@ const LoginAndSignUp = ({Home,setHome}) => {
 
   const addUser = async () => {
     try {
-      const response = await axios.post('http://192.168.0.107:3000/users', {
-        user_name: Name,
-        user_email: Email,
-        user_date_of_birth: BD,
-        user_phone: Phone,
-        user_password: Password,
-      }, {
-        headers: {
-          'Content-Type': 'application/json' 
+      const response = await axios.post(
+        'http://192.168.0.107:3000/users',
+        {
+          user_name: Name,
+          user_email: Email,
+          user_date_of_birth: BD,
+          user_phone: Phone,
+          user_password: Password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-      });
+      );
       const { data } = response;
       if (data.success) {
-      const user ={
-        user_name: Name,
-        user_email: Email,
-        user_date_of_birth: BD,
-        user_phone: Phone,
-        user_password: Password,
-        user_bio: Bio,
-        user_picture: Picture,
-      };
-      dispatch(addToken(user));
-      Alert.alert('Welcome', `${Name}`);
-      setName('');
-      setEmail('');
-      setBD('');
-      setPhone('');
-      setPassword('');
-      setHome(true);}
-      else{
+        const user = {
+          user_name: Name,
+          user_email: Email,
+          user_date_of_birth: BD,
+          user_phone: Phone,
+          user_password: Password,
+          user_bio: Bio,
+          user_picture: Picture,
+        };
+        dispatch(addToken(user));
+        Alert.alert('Welcome', `${Name}`);
+        setName('');
+        setEmail('');
+        setBD('');
+        setPhone('');
+        setPassword('');
+        setHome(true);
+      } else {
         Alert.alert('Error', 'User already exists');
         setSignUp(false), setLogin(true), setForgot(false);
       }
     } catch (error) {
-      console.error(error);
       Alert.alert('Error', 'Failed to add user');
       setHome(false);
     }
@@ -109,14 +111,13 @@ const LoginAndSignUp = ({Home,setHome}) => {
       Alert.alert('Error', 'Email is required');
       return;
     }
-  
+
     const url = `http://192.168.0.107:3000/users/email/${encodeURIComponent(Email)}`;
-    console.log("🚀 Requesting user with URL:", url);
-  
+
     try {
       const response = await axios.get(url);
       const { data } = response;
-  
+
       if (data.success) {
         const user = {
           user_name: data.token.user_name,
@@ -124,13 +125,13 @@ const LoginAndSignUp = ({Home,setHome}) => {
           user_date_of_birth: data.token.user_date_of_birth,
           user_phone: data.token.user_phone,
           user_password: data.token.user_password,
-          user_bio: data.token.user_bio || "",
-          user_picture: data.token.user_picture || "",
+          user_bio: data.token.user_bio || '',
+          user_picture: data.token.user_picture || '',
         };
-  
+
         dispatch(addToken(user));
         Alert.alert('Welcome', `${data.token.user_name}`);
-  
+
         setName('');
         setEmail('');
         setBD('');
@@ -144,16 +145,15 @@ const LoginAndSignUp = ({Home,setHome}) => {
         setForgot(false);
       }
     } catch (error) {
-    
       Alert.alert('Error', 'User does not exist');
       setHome(false);
     }
   };
-  
+
   return (
     <>
       {Home ? (
-        <HomePage setHome={setHome}/>
+        <HomePage setHome={setHome} />
       ) : (
         <View className="my-auto items-center ">
           {/* Login */}

@@ -16,7 +16,7 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_DATABASE,
   port: process.env.MYSQL_PORT,
   ssl: {
-    rejectUnauthorized: false // ← allows self-signed certs
+    rejectUnauthorized: false, 
   },
   waitForConnections: true,
   connectionLimit: 10,
@@ -26,33 +26,25 @@ const pool = mysql.createPool({
 // Test the database connection
 pool.getConnection((err, connection) => {
   if (err) {
-    console.error('❌ Failed to connect to MySQL:', err.message);
     process.exit(1);
   }
-  console.log('✅ Connected to MySQL database');
   connection.release();
 });
 
 // GET a user by email
 app.get('/users/email/:email', (req, res) => {
   const email = req.params.email;
-  console.log('📥 Received request for email:', email);
 
   const query = 'SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)';
   pool.query(query, [email], (err, results) => {
     if (err) {
-      console.error('❌ DB error:', err.message);
       return res.status(500).json({ error: err.message });
     }
 
-   
-
     if (results.length === 0) {
-      console.warn('❌ No user found with email:', email);
       return res.status(404).json({ message: 'User not found' });
     }
 
-    
     res.json({ token: results[0], success: true });
   });
 });
@@ -60,7 +52,6 @@ app.get('/users/email/:email', (req, res) => {
 // GET a user by email for message
 app.get('/users/messages/:email', (req, res) => {
   const email = req.params.email;
- 
 
   const query = `
     SELECT * FROM chat 
@@ -69,47 +60,59 @@ app.get('/users/messages/:email', (req, res) => {
 
   pool.query(query, [email, email], (err, results) => {
     if (err) {
-      console.error('❌ DB error:', err.message);
       return res.status(500).json({ error: err.message });
     }
 
-   
-
     if (results.length === 0) {
-      console.warn('❌ No messages found for email:', email);
       return res.status(404).json({ message: 'No messages found' });
     }
 
-    console.log('✅ Messages found:', results.length);
     res.json({ messages: results, success: true });
   });
 });
 
+// GET messages between two users
+app.get('/users/messages/person/:user_email/:reciver_email', (req, res) => {
+  const user_email = req.params.user_email;
+  const reciver_email = req.params.reciver_email;
 
+  const query = `
+    SELECT * FROM chat 
+    WHERE 
+      (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?)) 
+      OR 
+      (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?))
+    ORDER BY message_time ASC
+  `;
+
+  pool.query(query, [user_email, reciver_email, reciver_email, user_email], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'No messages found' });
+    }
+
+    res.json({ messages: results, success: true });
+  });
+});
 
 // GET all user
 app.get('/users/allusers', (req, res) => {
   const query = 'SELECT * FROM users ';
   pool.query(query, (err, results) => {
     if (err) {
-      console.error('❌ DB error:', err.message);
       return res.status(500).json({ error: err.message });
     }
 
-    
-
     if (results.length === 0) {
-      console.warn('❌ No user found');
       return res.status(404).json({ message: 'User not found' });
     }
 
-    
     res.json({ allusers: results, success: true });
   });
 });
-
-
-
 
 // POST to create a new user
 app.post('/users', (req, res) => {
@@ -130,7 +133,15 @@ app.post('/users', (req, res) => {
 
 // POST to update user
 app.post('/users/update_user', (req, res) => {
-  const { user_name, user_email, user_date_of_birth, user_phone, user_password, user_bio, user_picture } = req.body;
+  const {
+    user_name,
+    user_email,
+    user_date_of_birth,
+    user_phone,
+    user_password,
+    user_bio,
+    user_picture,
+  } = req.body;
 
   const query = `
     UPDATE users 
@@ -145,16 +156,72 @@ app.post('/users/update_user', (req, res) => {
   `;
 
   // user_email is used in WHERE, not SET (assuming it's the identifier)
-  const values = [user_name, user_date_of_birth, user_phone, user_password, user_bio, user_picture, user_email];
+  const values = [
+    user_name,
+    user_date_of_birth,
+    user_phone,
+    user_password,
+    user_bio,
+    user_picture,
+    user_email,
+  ];
 
   pool.query(query, values, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'User updated successfully', affectedRows: result.affectedRows, success: true });
+    res.json({
+      message: 'User updated successfully',
+      affectedRows: result.affectedRows,
+      success: true,
+    });
   });
 });
 
+// POST to create a new message chat
+app.post('/users/send_message', (req, res) => {
+  const {
+    user_name,
+    user_email,
+    user_phone,
+    message,
+    message_time,
+    reciver_name,
+    reciver_email,
+    reciver_phone,
+  } = req.body;
+
+  if (!user_email || !reciver_email || !message) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const time = message_time || new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+  const query = `
+    INSERT INTO chat 
+    (user_name, user_email, user_phone, message, message_time, reciver_name, reciver_email, reciver_phone) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [
+    user_name,
+    user_email,
+    user_phone,
+    message,
+    time,
+    reciver_name,
+    reciver_email,
+    reciver_phone,
+  ];
+
+  pool.query(query, values, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({
+      message: 'Message sent successfully',
+      id: result.insertId,
+      success: true,
+    });
+  });
+});
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => {});

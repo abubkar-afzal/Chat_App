@@ -40,6 +40,7 @@ const HomePage = ({setHome}) => {
   const [ViewProfile, setViewProfile] = useState(false);
   const [CameraOpen, setCameraOpen] = useState(false);
   const [StatusMenu, setStatusMenu] = useState(false);
+  const [OtherUserDetails, setOtherUserDetails] = useState([]);
 
   const handleScroll = (event) => {
     const scrollY = event.nativeEvent.contentOffset.y;
@@ -89,6 +90,8 @@ const HomePage = ({setHome}) => {
           setSetting={setSetting}
           setViewProfile={setViewProfile}
           ViewProfile={ViewProfile}
+          OtherUserDetails={OtherUserDetails}
+          setCameraOpen={setCameraOpen}
         />
       ) : Contact ? (
         <ContactSession
@@ -96,6 +99,8 @@ const HomePage = ({setHome}) => {
           setMessage={setMessage}
           setSetting={setSetting}
           setChat={setChat}
+          setOtherUserDetails={setOtherUserDetails}
+          
         />
       ) : (
         <>
@@ -177,7 +182,7 @@ const HomePage = ({setHome}) => {
               </View>
 
               {Message ? (
-                <MessageSession setChat={setChat} setContact={setContact} setMessage={setMessage} />
+                <MessageSession setChat={setChat} setContact={setContact} setMessage={setMessage} setOtherUserDetails={setOtherUserDetails}/>
               ) : Status ? (
                 <StatusSession setStatusView={setStatusView} setWriteStatus={setWriteStatus} setCameraOpen={setCameraOpen} setStatusMenu={setStatusMenu}/>
               ) : Call ? (
