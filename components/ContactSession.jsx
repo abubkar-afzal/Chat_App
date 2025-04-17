@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { Alert, Image, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
 import IconAnt from 'react-native-vector-icons/AntDesign';
 import IconFeature from 'react-native-vector-icons/Feather';
@@ -113,7 +113,16 @@ const ContactSession = ({ setContact, setMessage, setSetting, setChat,setOtherUs
                       });
                     }}
                     className="my-[0.5rem] flex h-[10vh] w-[95vw] flex-row items-center rounded-[1rem] bg-[---d1] disabled:opacity-60">
-                    <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]"></View>
+                    <View className="my-auto ml-3 h-[8vh] w-[16vw] rounded-full bg-[---h1]">
+                      {items.user_picture ? (
+                          <Image
+                            source={{ uri: items.user_picture }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="cover"
+                            className='rounded-full'
+                          />
+                        ) : null}
+                    </View>
                     <View className="mx-2 w-[70vw] overflow-hidden">
                       <Text className="mt-[10px] h-[25px] text-[18px] font-bold">
                        {user.user_email == items.user_email ? "Me":items.user_name}

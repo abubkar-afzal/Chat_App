@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  Platform,
   Pressable,
   SafeAreaView,
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import IconAwesome from 'react-native-vector-icons/FontAwesome';
@@ -16,11 +14,9 @@ import IconFeature from 'react-native-vector-icons/Feather';
 import IconMaterialCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import IconEntypo from 'react-native-vector-icons/Entypo';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ViewProfileSession from './ViewProfileSession';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { io } from 'socket.io-client';
 const ChatSession = ({
   setChat,
   setSetting,
@@ -28,7 +24,7 @@ const ChatSession = ({
   setViewProfile,
   ViewProfile,
   OtherUserDetails,
-  setCameraOpen
+  setCameraOpen,
 }) => {
   const [DropMenu, setDropMenu] = useState(false);
   const [SentAbleMessage, setSentAbleMessage] = useState('');
@@ -38,33 +34,29 @@ const ChatSession = ({
   const [widgetLayout, setWidgetLayout] = useState(false);
   const data = useSelector((state) => state.reducer);
   const [user] = data;
-  
+
   const [Messages, setMessages] = useState([]);
   useEffect(() => {
     const interval = setInterval(() => {
-      getChat(); 
-    }, 1000); 
-  
-    return () => clearInterval(interval); 
- 
+      getChat();
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getChat = async () => {
-   
-
     const url = `http://192.168.0.107:3000/users/messages/person/${encodeURIComponent(user.user_email)}/${encodeURIComponent(OtherUserDetails.reciver_email)}`;
 
     try {
       const response = await axios.get(url);
       const { data } = response;
-    
+
       if (data.success) {
         setMessages(data.messages);
       } else {
         Alert.alert('Error', 'User does not exist');
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -207,39 +199,33 @@ const ChatSession = ({
           <SafeAreaView className={`${keyboardArea ? 'h-[50vh]' : 'h-[85vh]'}`}>
             <ScrollView className="flex flex-col">
               {/* ourMessage */}
-              {
-                Messages.map((item)=>{
-                  
-                  return(
-                    user.user_name == item.user_name ? <View key={item.message_id} className="items-end pl-[30vw]">
+              {Messages.map((item) => {
+                return user.user_name == item.user_name ? (
+                  <View key={item.message_id} className="items-end pl-[30vw]">
                     <View className=" flex flex-row items-center ">
                       <View className=" my-2 flex  min-w-[25vw]   flex-col rounded-[2rem] bg-[---msg] p-3 pb-6 ">
-                        <Text className="text-[16px] text-white">
-                         {item.message}
-                        </Text>
+                        <Text className="text-[16px] text-white">{item.message}</Text>
                         <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
-                        {formatTime(item.message_time)}
+                          {formatTime(item.message_time)}
                         </Text>
                       </View>
                       <View className="mx-[5px] h-[2rem] w-[2rem] rounded-[2rem] bg-[---b1]"></View>
                     </View>
-                  </View>: <View key={item.message_id} className="items-start pr-[30vw]">
-                <View className="flex flex-row items-center">
-                  <View className="mx-[5px] h-[2rem] w-[2rem] rounded-[2rem] bg-[---b1]"></View>
-                  <View className=" my-2 flex  min-w-[25vw]   flex-col rounded-[2rem] bg-[---msg2] p-3 pb-6 ">
-                    <Text className="text-[16px] text-white"> {item.message}</Text>
-                    <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
-                    {formatTime(item.message_time)}
-                    </Text>
                   </View>
-                </View>
-              </View>
-                  )
-                })
-              }
-              
-
-              
+                ) : (
+                  <View key={item.message_id} className="items-start pr-[30vw]">
+                    <View className="flex flex-row items-center">
+                      <View className="mx-[5px] h-[2rem] w-[2rem] rounded-[2rem] bg-[---b1]"></View>
+                      <View className=" my-2 flex  min-w-[25vw]   flex-col rounded-[2rem] bg-[---msg2] p-3 pb-6 ">
+                        <Text className="text-[16px] text-white"> {item.message}</Text>
+                        <Text className="absolute bottom-2 right-[1rem] mx-[1rem]  text-[10px] text-white">
+                          {formatTime(item.message_time)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
             </ScrollView>
           </SafeAreaView>
 
@@ -274,9 +260,10 @@ const ChatSession = ({
                   }}>
                   <IconAnt name="paperclip" size={25} color="black" className="mx-2 shadow-lg" />
                 </Pressable>
-                <Pressable onPress={()=>{
-                  setCameraOpen(true)
-                }}>
+                <Pressable
+                  onPress={() => {
+                    setCameraOpen(true);
+                  }}>
                   <IconAnt name="camera" size={25} color="black" className=" shadow-lg" />
                 </Pressable>
               </Pressable>

@@ -10,12 +10,11 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import HomePage from './HomePage';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { addToken } from './redux/action';
 
-const LoginAndSignUp = ({ Home, setHome }) => {
+const LoginAndSignUp = ({ setAddingBioAndPicture }) => {
   const [Name, setName] = useState('');
   const [ChangeName, setChangeName] = useState(false);
   const [BD, setBD] = useState('');
@@ -90,20 +89,21 @@ const LoginAndSignUp = ({ Home, setHome }) => {
           user_picture: Picture,
         };
         dispatch(addToken(user));
-        Alert.alert('Welcome', `${Name}`);
         setName('');
         setEmail('');
         setBD('');
         setPhone('');
         setPassword('');
-        setHome(true);
+        setAddingBioAndPicture(true)
+        
       } else {
         Alert.alert('Error', 'User already exists');
         setSignUp(false), setLogin(true), setForgot(false);
+        setAddingBioAndPicture(false)
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to add user');
-      setHome(false);
+      
     }
   };
   const getUser = async () => {
@@ -130,38 +130,38 @@ const LoginAndSignUp = ({ Home, setHome }) => {
         };
 
         dispatch(addToken(user));
-        Alert.alert('Welcome', `${data.token.user_name}`);
 
         setName('');
         setEmail('');
         setBD('');
         setPhone('');
         setPassword('');
-        setHome(true);
+        setAddingBioAndPicture(true)
+        
+
+        
       } else {
         Alert.alert('Error', 'User does not exist');
         setSignUp(true);
         setLogin(false);
         setForgot(false);
+        setAddingBioAndPicture(false)
       }
     } catch (error) {
       Alert.alert('Error', 'User does not exist');
-      setHome(false);
+      
     }
   };
-
   return (
     <>
-      {Home ? (
-        <HomePage setHome={setHome} />
-      ) : (
+      
         <View className="my-auto items-center ">
           {/* Login */}
           {Login ? (
             <View className="items-center">
               <View>
                 <Text className="fixed top-[-8rem] text-[1.5rem] font-extrabold">
-                  Pigeon Message 🕊️
+                  Pegion Message 🕊️
                 </Text>
               </View>
               <Text className="my-[1rem] text-[20px] font-black">Login</Text>
@@ -248,7 +248,7 @@ const LoginAndSignUp = ({ Home, setHome }) => {
             <View className="items-center">
               <View>
                 <Text className="fixed top-[-2rem] text-[1.5rem] font-extrabold">
-                  Pigeon Message 🕊️
+                  Pegion Message 🕊️
                 </Text>
               </View>
               <Text className="mb-[1rem] text-[20px] font-black">Create New Account</Text>
@@ -407,7 +407,7 @@ const LoginAndSignUp = ({ Home, setHome }) => {
             <View className="items-center">
               <View>
                 <Text className="fixed top-[-12rem] text-[1.5rem] font-extrabold">
-                  Pigeon Message 🕊️
+                  Pegion Message 🕊️
                 </Text>
               </View>
               <Text className="mb-[1rem] text-[20px] font-black">Forgot Password</Text>
@@ -464,7 +464,7 @@ const LoginAndSignUp = ({ Home, setHome }) => {
             </View>
           ) : null}
         </View>
-      )}
+      
     </>
   );
 };

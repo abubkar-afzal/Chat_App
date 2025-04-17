@@ -10,13 +10,15 @@ import {
 } from 'react-native';
 import LoginAndSignUp from './LoginAndSignup';
 import { useSelector } from 'react-redux';
-import HomePage from './HomePage';	
+import HomePage from './HomePage';
+import AddingImageAndBio from './AddingImageAndBio';
 const FirstPage = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [btnActive, setbtnActive] = useState(false);
   const [btnDisable, setbtnDisable] = useState(true);
   const [Login, setLogin] = useState(false);
   const [Home, setHome] = useState(false);
+  const [AddingBioAndPicture, setAddingBioAndPicture] = useState(false);
 
   const toggleCheckbox = () => {
     setIsChecked(!isChecked);
@@ -26,22 +28,28 @@ const FirstPage = () => {
     setbtnActive(!btnActive);
   };
   const data = useSelector((state) => state.reducer);
+  const [user] = data;
+  console.log(user);
   useEffect(() => {
-  
-    if(data.length == 0){
+    if (data.length == 0) {
       setHome(false);
-    }else{
-      setHome(true)
+    } else {
+      if (user.user_picture == "") {
+        setHome(false);
+      } else {
+        setHome(true);
+      }
     }
-
-  }, [data])
-  return Home ? (
-    <HomePage setHome={setHome}/>
+  }, [data]);
+  return AddingBioAndPicture ? (
+    <AddingImageAndBio Home={Home} setHome={setHome} />
+  ) : Home ? (
+    <HomePage setHome={setHome} />
   ) : Login ? (
-    <LoginAndSignUp Home={Home} setHome={setHome}/>
+    <LoginAndSignUp setAddingBioAndPicture={setAddingBioAndPicture} />
   ) : (
     <View className={`my-auto items-center`}>
-      <Text className={`mt-[2rem] text-[20px] font-bold`}>WELCOME TO PIGEON MESSAGE</Text>
+      <Text className={`mt-[2rem] text-[20px] font-bold`}>WELCOME TO PEGION MESSAGE</Text>
       <View className="mb-[-6rem] w-[90%]">
         <Image source={require('../assets/pigeon_main.png')} className="mt-[4rem] h-[50%] w-full" />
       </View>

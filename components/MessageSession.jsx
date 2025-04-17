@@ -86,7 +86,6 @@ const MessageSession = ({ setMessage, setChat, setContact, setOtherUserDetails }
   const toggleCheckbox = () => {
     setIsChecked(!isChecked);
   };
-
   return (
     <>
       <SafeAreaView className="mb-[2rem] h-[92vh]">
