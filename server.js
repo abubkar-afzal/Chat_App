@@ -3,30 +3,15 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serve uploaded images statically
-const uploadPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
-app.use('/uploads', express.static(uploadPath));
-
-// Multer setup for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage: storage });
-
-// MySQL connection pool
+// Create MySQL pool with Promise support
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
@@ -39,131 +24,157 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-});
-
-pool.getConnection((err, connection) => {
-  if (err) {
-    process.exit(1);
-  }
-  connection.release();
-});
+}).promise();
 
 // === ROUTES ===
 
-// Upload user profile picture
-app.post('/users/upload_picture', upload.single('picture'), (req, res) => {
-  const { email } = req.body;
-  const file = req.file;
+// Upload profile picture (base64 string)
+app.post('/users/upload_picture', async (req, res) => {
+  const { email, image } = req.body;
 
-  if (!email || !file) {
-    return res.status(400).json({ error: 'Missing email or picture' });
+  if (!email || !image) {
+    return res.status(400).json({ error: 'Missing email or image' });
   }
 
-  const pictureUrl = `/uploads/${file.filename}`;
-
-  const query = `UPDATE users SET user_picture = ? WHERE user_email = ?`;
-  pool.query(query, [pictureUrl, email], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const buffer = Buffer.from(image, 'base64');
+    const query = 'UPDATE users SET user_picture = ? WHERE user_email = ?';
+    const [result] = await pool.query(query, [buffer, email]);
 
     res.json({
-      message: 'Profile picture updated successfully',
-      picture: pictureUrl,
       success: true,
+      image: buffer.toString('base64'),
     });
-  });
+  } catch (err) {
+    console.error('Buffer creation or DB query failed:', err);
+    return res.status(500).json({ error: 'Server error', details: err.message });
+  }
 });
 
+// Get profile picture
+app.get('/users/get_picture', async (req, res) => {
+  const email = req.query.email;
+  try {
+    const [rows] = await pool.query(
+      'SELECT user_picture AS picture FROM users WHERE user_email = ?',
+      [email]
+    );
+
+    if (rows.length > 0 && rows[0].picture) {
+      res.set('Content-Type', 'image/jpeg'); // defaulting to JPEG
+      res.send(rows[0].picture);
+    } else {
+      res.json({ success: false, message: 'No picture found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
 // Upload user bio
-app.post('/users/upload_bio', (req, res) => {
+app.post('/users/upload_bio', async (req, res) => {
   const { user_email, user_bio } = req.body;
 
   if (!user_email || !user_bio) {
     return res.status(400).json({ success: false, message: 'Email and bio are required' });
   }
 
-  const query = `UPDATE users SET user_bio = ? WHERE user_email = ?`;
-  pool.query(query, [user_bio, user_email], (err, result) => {
-    if (err) {
-      return res.status(500).json({ success: false, error: err.message });
-    }
-    console.log(err)
-    res.json({
-      message: 'Bio updated successfully',
-      success: true,
-    });
-  });
+  try {
+    const query = `UPDATE users SET user_bio = ? WHERE user_email = ?`;
+    await pool.query(query, [user_bio, user_email]);
+    res.json({ message: 'Bio updated successfully', success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-
 // GET user by email
-app.get('/users/email/:email', (req, res) => {
+app.get('/users/email/:email', async (req, res) => {
   const email = req.params.email;
-  const query = 'SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)';
-  pool.query(query, [email], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const [results] = await pool.query(
+      'SELECT * FROM users WHERE LOWER(user_email) = LOWER(?)',
+      [email]
+    );
     if (results.length === 0) return res.status(404).json({ message: 'User not found' });
     res.json({ token: results[0], success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET messages by email
-app.get('/users/messages/:email', (req, res) => {
+app.get('/users/messages/:email', async (req, res) => {
   const email = req.params.email;
-  const query = `
-    SELECT * FROM chat 
-    WHERE LOWER(user_email) = LOWER(?) 
-       OR LOWER(reciver_email) = LOWER(?)`;
-  pool.query(query, [email, email], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const [results] = await pool.query(
+      `SELECT * FROM chat WHERE LOWER(user_email) = LOWER(?) OR LOWER(reciver_email) = LOWER(?)`,
+      [email, email]
+    );
     if (results.length === 0) return res.status(404).json({ message: 'No messages found' });
     res.json({ messages: results, success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET messages between two users
-app.get('/users/messages/person/:user_email/:reciver_email', (req, res) => {
+app.get('/users/messages/person/:user_email/:reciver_email', async (req, res) => {
   const { user_email, reciver_email } = req.params;
-  const query = `
-    SELECT * FROM chat 
-    WHERE 
-      (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?)) 
-      OR 
-      (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?))
-    ORDER BY message_time ASC`;
-  pool.query(query, [user_email, reciver_email, reciver_email, user_email], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const [results] = await pool.query(
+      `SELECT * FROM chat 
+       WHERE 
+         (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?)) 
+         OR 
+         (LOWER(user_email) = LOWER(?) AND LOWER(reciver_email) = LOWER(?))
+       ORDER BY message_time ASC`,
+      [user_email, reciver_email, reciver_email, user_email]
+    );
     if (results.length === 0) return res.status(404).json({ message: 'No messages found' });
     res.json({ messages: results, success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET all users
-app.get('/users/allusers', (req, res) => {
-  const query = 'SELECT * FROM users';
-  pool.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+app.get('/users/allusers', async (req, res) => {
+  try {
+    const [results] = await pool.query('SELECT * FROM users');
     if (results.length === 0) return res.status(404).json({ message: 'User not found' });
     res.json({ allusers: results, success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST create user
-app.post('/users', (req, res) => {
+app.post('/users', async (req, res) => {
   const { user_name, user_email, user_date_of_birth, user_phone, user_password } = req.body;
-  const query = `
-    INSERT INTO users 
-    (user_name, user_email, user_date_of_birth, user_phone, user_password) 
-    VALUES (?, ?, ?, ?, ?)`;
-  const values = [user_name, user_email, user_date_of_birth, user_phone, user_password];
 
-  pool.query(query, values, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const query = `
+      INSERT INTO users 
+      (user_name, user_email, user_date_of_birth, user_phone, user_password) 
+      VALUES (?, ?, ?, ?, ?)`;
+    const [result] = await pool.query(query, [
+      user_name,
+      user_email,
+      user_date_of_birth,
+      user_phone,
+      user_password,
+    ]);
     res.json({ message: 'User added successfully', id: result.insertId, success: true });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST update user
-app.post('/users/update_user', (req, res) => {
+app.post('/users/update_user', async (req, res) => {
   const {
     user_name,
     user_email,
@@ -174,38 +185,38 @@ app.post('/users/update_user', (req, res) => {
     user_picture,
   } = req.body;
 
-  const query = `
-    UPDATE users 
-    SET 
-      user_name = ?, 
-      user_date_of_birth = ?, 
-      user_phone = ?, 
-      user_password = ?, 
-      user_bio = ?, 
-      user_picture = ?
-    WHERE user_email = ?`;
-  const values = [
-    user_name,
-    user_date_of_birth,
-    user_phone,
-    user_password,
-    user_bio,
-    user_picture,
-    user_email,
-  ];
-
-  pool.query(query, values, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const query = `
+      UPDATE users 
+      SET 
+        user_name = ?, 
+        user_date_of_birth = ?, 
+        user_phone = ?, 
+        user_password = ?, 
+        user_bio = ?, 
+        user_picture = ?
+      WHERE user_email = ?`;
+    const [result] = await pool.query(query, [
+      user_name,
+      user_date_of_birth,
+      user_phone,
+      user_password,
+      user_bio,
+      user_picture,
+      user_email,
+    ]);
     res.json({
       message: 'User updated successfully',
       affectedRows: result.affectedRows,
       success: true,
     });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST create chat message
-app.post('/users/send_message', (req, res) => {
+app.post('/users/send_message', async (req, res) => {
   const {
     user_name,
     user_email,
@@ -223,29 +234,29 @@ app.post('/users/send_message', (req, res) => {
 
   const time = message_time || new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-  const query = `
-    INSERT INTO chat 
-    (user_name, user_email, user_phone, message, message_time, reciver_name, reciver_email, reciver_phone) 
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-  const values = [
-    user_name,
-    user_email,
-    user_phone,
-    message,
-    time,
-    reciver_name,
-    reciver_email,
-    reciver_phone,
-  ];
-
-  pool.query(query, values, (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+  try {
+    const query = `
+      INSERT INTO chat 
+      (user_name, user_email, user_phone, message, message_time, reciver_name, reciver_email, reciver_phone) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const [result] = await pool.query(query, [
+      user_name,
+      user_email,
+      user_phone,
+      message,
+      time,
+      reciver_name,
+      reciver_email,
+      reciver_phone,
+    ]);
     res.json({
       message: 'Message sent successfully',
       id: result.insertId,
       success: true,
     });
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

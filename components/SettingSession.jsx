@@ -16,7 +16,6 @@ const SettingSession = ({ setSetting,setHome }) => {
   const [AccountPage, setAccountPage] = useState(false);
   const data = useSelector((state) => state.reducer);
   const [user] = data;
-  console.log(user)
   return (
     <>
       {SettingPage ? (

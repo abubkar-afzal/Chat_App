@@ -34,7 +34,7 @@ const MessageSession = ({ setMessage, setChat, setContact, setOtherUserDetails }
       return;
     }
 
-    const url = `http://192.168.0.107:3000/users/messages/${encodeURIComponent(Email)}`;
+    const url = `http://192.168.0.100:3000/users/messages/${encodeURIComponent(Email)}`;
 
     try {
       const response = await axios.get(url);

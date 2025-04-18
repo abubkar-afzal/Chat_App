@@ -12,13 +12,11 @@ const ContactSession = ({ setContact, setMessage, setSetting, setChat,setOtherUs
   const data = useSelector((state) => state.reducer);
   const [user] = data;
   const [Users, setUsers] = useState([]);
-  console.log(user)
-  console.log(Users)
   useEffect(() => {
     getAllUsers();
   }, []);
   const getAllUsers = async () => {
-    const url = `http://192.168.0.107:3000/users/allusers`;
+    const url = `http://192.168.0.100:3000/users/allusers`;
 
     try {
       const response = await axios.get(url);

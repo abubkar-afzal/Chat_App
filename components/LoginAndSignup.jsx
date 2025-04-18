@@ -63,7 +63,7 @@ const LoginAndSignUp = ({ setAddingBioAndPicture }) => {
   const addUser = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.0.107:3000/users',
+        'http://192.168.0.100:3000/users',
         {
           user_name: Name,
           user_email: Email,
@@ -112,7 +112,7 @@ const LoginAndSignUp = ({ setAddingBioAndPicture }) => {
       return;
     }
 
-    const url = `http://192.168.0.107:3000/users/email/${encodeURIComponent(Email)}`;
+    const url = `http://192.168.0.100:3000/users/email/${encodeURIComponent(Email)}`;
 
     try {
       const response = await axios.get(url);

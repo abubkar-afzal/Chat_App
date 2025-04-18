@@ -8,6 +8,7 @@ import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import PrivacySession from './PrivacySession';
 import { useDispatch } from 'react-redux';
 import { removeToken } from './redux/action';
+
 const AccountSession = ({ setSettingPage, setAccountPage,setHome}) => {
   const [Backup, setBackup] = useState(false);
   const [PrivacyPage, setPrivacyPage] = useState(false);

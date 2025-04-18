@@ -29,7 +29,6 @@ const FirstPage = () => {
   };
   const data = useSelector((state) => state.reducer);
   const [user] = data;
-  console.log(user);
   useEffect(() => {
     if (data.length == 0) {
       setHome(false);
@@ -41,12 +40,13 @@ const FirstPage = () => {
       }
     }
   }, [data]);
-  return AddingBioAndPicture ? (
-    <AddingImageAndBio Home={Home} setHome={setHome} />
-  ) : Home ? (
+  console.log(user)
+  return  Home ? (
     <HomePage setHome={setHome} />
   ) : Login ? (
     <LoginAndSignUp setAddingBioAndPicture={setAddingBioAndPicture} />
+  ) : AddingBioAndPicture ? (
+    <AddingImageAndBio Home={Home} setHome={setHome} />
   ) : (
     <View className={`my-auto items-center`}>
       <Text className={`mt-[2rem] text-[20px] font-bold`}>WELCOME TO PEGION MESSAGE</Text>

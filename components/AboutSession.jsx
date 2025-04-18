@@ -6,6 +6,7 @@ import IconFeature from 'react-native-vector-icons/Feather';
 import IconMaterialCommunity from 'react-native-vector-icons/MaterialCommunityIcons';
 import IconMaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import IconAwesome from 'react-native-vector-icons/FontAwesome';
+
 const AboutSession = ({ setSettingPage, setAboutPage }) => {
   return (
     <>

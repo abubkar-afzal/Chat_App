@@ -45,7 +45,7 @@ const ChatSession = ({
   }, []);
 
   const getChat = async () => {
-    const url = `http://192.168.0.107:3000/users/messages/person/${encodeURIComponent(user.user_email)}/${encodeURIComponent(OtherUserDetails.reciver_email)}`;
+    const url = `http://192.168.0.100:3000/users/messages/person/${encodeURIComponent(user.user_email)}/${encodeURIComponent(OtherUserDetails.reciver_email)}`;
 
     try {
       const response = await axios.get(url);
@@ -69,7 +69,7 @@ const ChatSession = ({
   const sendMessage = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.0.107:3000/users/send_message',
+        'http://192.168.0.100:3000/users/send_message',
         {
           user_name: user.user_name,
           user_email: user.user_email,
